@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="linux," />
+  
+
+  
+    <meta name="description" content="一起成长" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>linux系统检查 [ 小彩鸟 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">小彩鸟</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        linux系统检查
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2015-07-20T04:00:00.000Z">
+        2015-07-20
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <h4 id="系统常用检查命令"><a href="#系统常用检查命令" class="headerlink" title="系统常用检查命令"></a>系统常用检查命令</h4><p>&emsp;&emsp;磁盘：df -h<br>&emsp;&emsp;内存：free -m<br>&emsp;&emsp;负载：top</p>
+<p>[root@hadoop001 ~]$ free -m<br>              total        used        free      shared  buff/cache   available<br>Mem:           7823         222        6229         257        1371        7096<br>Swap:             0           0           0</p>
+<p>&emsp;&emsp;大数据生产服务器swap是设置0  10也可以（swap作用是将硬盘划分过来作为内存，所以当数据进入swap那么肯定是很缓慢的，所以设置为0）</p>
+<p>[root@hadoop001 ~]$ df -h<br>Filesystem      Size  Used Avail Use% Mounted on<br>/dev/vda1        40G   16G   25G  39% /</p>
+<p>/dev/vdb1        2T   16G   25G  1% /data01<br>/dev/vdb2        2T   16G   25G  1% /data02<br>/dev/vdb3        2T   16G   25G  1% /data03<br>/dev/vdb4        2T   16G   25G  1% /data04</p>
+<p>不要<br>devtmpfs        3.9G     0  3.9G   0% /dev<br>tmpfs           3.9G   16K  3.9G   1% /dev/shm<br>tmpfs           3.9G  258M  3.6G   7% /run<br>tmpfs           3.9G     0  3.9G   0% /sys/fs/cgroup<br>tmpfs           783M     0  783M   0% /run/user/1004</p>
+<p>（系统启动多少时间，可以看到今天前什么时候重启过）（几个用户在登录）（系统负载，1分钟5分钟15分钟，<em>判断服务器卡不卡</em>）<br>top - 21:20:22 up 7 days, 58 min,  1 user,  load average: 0.01, 0.03, 0.05<br>Tasks:  89 total,   1 running,  88 sleeping,   0 stopped,   0 zombie<br>%Cpu(s):  0.2 us,  0.5 sy,  0.0 ni, 99.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.3 st<br>KiB Mem :  8011076 total,  6377388 free,   229060 used,  1404628 buff/cache<br>KiB Swap:        0 total,        0 free,        0 used.  7265724 avail Mem </p>
+<p>  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND<br> 2374 root      20   0  394348  31376   8608 S   0.3  0.4  41:44.99 jdog-kunlunmirr<br>    1 root      20   0  125356   3796   2508 S   0.0  0.0   1:22.32 systemd<br>    2 root      20   0       0      0      0 S   0.0  0.0   0:00.00 kthreadd<br>    3 root      20   0       0      0      0 S   0.0  0.0   0:00.08 ksoftirqd/0<br>    5 root       0 -20       0      0      0 S   0.0  0.0   0:00.00 kworker/0:0H<br>    6 root      20   0       0      0      0 S   0.0  0.0   0:02.50 kworker/u4:0  </p>
+<p>系统负载<br>&emsp;&emsp;load average: 0.01, 0.03, 0.05<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;          1min   5min  15min</p>
+<p>&emsp;&emsp;经验值: 10  生产不用超过这个 ，否则认为服务器就是卡<br>&emsp;&emsp;&emsp;&emsp;a.是你的程序有问题 在大量跑计算<br>&emsp;&emsp;&emsp;&emsp;b.是不是被挖矿 yarn redis 最容易被hacker 攻击<br>&emsp;&emsp;&emsp;&emsp;c.硬件问题  内存条 硬盘</p>
+<p>&emsp;&emsp;a，b选项可以看top中%CPU %MEM，哪些进程属于哪个user占用的cpu和内存过高，排查是故意的操作还是程序问题<br>&emsp;&emsp;c选项遇到过硬盘问题导致程序卡主，导致系统负载过高。。正常服务器负载是1,2,3超过5就要观察，超过10就要排查下<br>&emsp;&emsp;c判断硬件问题最简单方法就是重启服务器，如果硬件损坏开机就会有灯闪</p>
+<h4 id="yum安装"><a href="#yum安装" class="headerlink" title="yum安装"></a>yum安装</h4><p> yum search httpd<br> yum install httpd</p>
+<p>centos6:<br>service httpd status|start|stop  1个应用httpd</p>
+<p>centos7:<br>service httpd status|start|stop  是向下兼容的也能使用<br>systemctl status|start|stop httpd app2 app3 app4  一次性操作多个应用</p>
+<p>搜索 卸载:<br>[root@hadoop101 ~]# rpm -qa|grep http<br>httpd-2.4.6-90.el7.centos.x86_64<br>httpd-tools-2.4.6-90.el7.centos.x86_64<br>[root@hadoop101 ~]# rpm -e 包名称 –nodeps</p>
+<p>[root@hadoop101 ~]# yum remove httpd-2.4.6-90.el7.centos.x86_64</p>
+<h4 id="进程-端口号"><a href="#进程-端口号" class="headerlink" title="进程 端口号"></a>进程 端口号</h4><p>ps -ef | grep http<br>kill -9 16629<br>kill -9 16630 16631  16632  16633  16634</p>
+<p>根据匹配字段 搜索所有符合的进程 全部杀死<br>但是: 生产慎用 除非你先ps查看 这个关键词搜索的进程 是不是都是你想要杀死的进程<br>保不齐有个其他服务的进程 会造成误杀 生产事故！！！</p>
+<p>[root@hadoop101 ~]# ps -ef|grep http<br>root     18363     1  0 21:51 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND<br>apache   18364 18363  0 21:51 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND<br>apache   18365 18363  0 21:51 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND<br>apache   18366 18363  0 21:51 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND<br>apache   18367 18363  0 21:51 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND<br>apache   18368 18363  0 21:51 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND<br>root     18387 15881  0 21:51 pts/2    00:00:00 grep –color=auto http</p>
+<p>上面第二行是进程号 第三行是父进程号  , 可知18363是主进程 </p>
+<p><em>想知道进程占用哪个端口号(netstat -nlp| grep 3306（查看端口启动哪个进程）。netstat -nlp| grep mysql（查看mysql占用哪个端口）)</em>:<br>[root@ruozedata001 ~]# <em>netstat -nlp| grep 18670</em><br>tcp6       0      0 :::80                   :::*                    LISTEN      18670/httpd<br>[root@ruozedata001 ~]#<br>[root@ruozedata001 ~]#<br>[root@ruozedata001 ~]#<br>[root@ruozedata001 ~]# netstat -nlp| grep 18671<br>[root@ruozedata001 ~]# netstat -nlp| grep 18672<br>[root@ruozedata001 ~]# netstat -nlp| grep 18673<br>[root@ruozedata001 ~]# </p>
+<p>上面可见进程不一定都会起到端口号<br>但是  与其他服务通信 必然需要端口号！！！</p>
+<p>老板: 去打开的应用yyy的网页？你会涉及到哪些Linux命令<br>我知道xxx服务器的ip,之后查询这个yyy对应的端口号:ps -ef|grep yyy ,知道进程号后得到该进程占用的端口号:netstat -nlp|grep pid<br>此时已经得到了端口号之后浏览器里输入<a href="http://ip:端口号">http://ip:端口号</a>   (还需要确保能ping 通 ip还有端口号)</p>
+<p>细节:<br>[root@ruozedata001 ~]# netstat -nlp| grep 18670<br>tcp6       0      0 :::80                   :::*                    LISTEN      18670/httpd<br>tcp6       0      0 :80                   :::*                    LISTEN      18670/httpd<br>tcp6       0      0 192.168.0.3:80                   :::*                    LISTEN      18670/httpd<br>::和0.0.0.0等价于当前机器的ip</p>
+<p>tcp6       0      0 127.0.0.1:80                   :::*                    LISTEN      18670/httpd<br>tcp6       0      0 localhost:80                   :::*                    LISTEN      18670/httpd<br>危险: 127.0.0.1和localhost该服务只能自己服务器的里面自己访问自己,外面的服务器访问不了该服务<br>生产中遇到过:服务启动了,防火墙也关了,但是连接不上服务 原因就是是以127.0.0.1的方式启动的,默认配置文件没有修改</p>
+<p>测试服务通不通:           ping ip<br>测试服务器端口能不能通:   telnet ip port</p>
+<p>yum install -y telnet</p>
+<p>学习时：如果都不能通可能防火墙开启。如果是云主机需要开启安全组策略<br>生产中：如果都不能通，直接找linux运维 网络工程师（这个就需要加防火墙策略，防火墙分为硬件或者软件，软件一般便宜一些）</p>
+<p>总结:<br>看到错误 Connection refused</p>
+<ol>
+<li>ping   ip    (<em>失败未必就是不能连接的有些服务器是禁止ping的(防止黑客扫描) 但是做telnet ip port是可以的</em>)</li>
+<li>telnet ip  port  ok</li>
+</ol>
+<p>配置企业级别yum源 取代互联网的repo文件的URL (因为我们做的东西都是内网的是物理隔绝的不会连接互联网,)</p>
+<p>4.下载<br>wget <a href="https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/2.4.5/spark-core_2.12-2.4.5.jar" target="_blank" rel="noopener">https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/2.4.5/spark-core_2.12-2.4.5.jar</a><br>curl <a href="https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/2.4.5/spark-core_2.12-2.4.5.jar" target="_blank" rel="noopener">https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/2.4.5/spark-core_2.12-2.4.5.jar</a> -O  spark-core_2.12-2.4.5.jar</p>
+<p>5.压缩 解压<br>zip -r xxx.zip xxx/*<br>unzip xxx.zip</p>
+<p>tar -czvf xxxx.tar.gz  xxxx/*<br>tar -xzvf xxxx.tar.gz</p>
+<p>Examples:<br>  tar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.<br>  tar -tvf archive.tar         # List all files in archive.tar verbosely.<br>  tar -xf archive.tar          # Extract all files from archive.tar.</p>
+<h4 id="如何找到命令-which"><a href="#如何找到命令-which" class="headerlink" title="如何找到命令  which"></a>如何找到命令  which</h4><p>[root@hadoop101 ~]# which ls<br>alias ls=’ls –color=auto’</p>
+<p>想要命令快速找到  which xxx 来验证，其实就是提前将命令的目录配置在环境变量$PATH<br>echo $PATH 来查看是否将命令的目录配置上！</p>
+<h4 id="定时"><a href="#定时" class="headerlink" title="定时"></a>定时</h4>
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#系统常用检查命令"><span class="toc-text">系统常用检查命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#yum安装"><span class="toc-text">yum安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#进程-端口号"><span class="toc-text">进程 端口号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#如何找到命令-which"><span class="toc-text">如何找到命令  which</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#定时"><span class="toc-text">定时</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="https://kevinofneu-blog-static.oss-cn-beijing.aliyuncs.com/static/2018-12-10-qrcode_for_gh_ffacf5722095_258.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2015/07/18/linux/" rel="next" title="linux">
+          linux
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://blog.0xff000000.com" target="_blank" rel="noopener">首页</a> |
+        <a class="bottom-item" href="https://0xff000000.com" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>
