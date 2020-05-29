@@ -92,7 +92,8 @@
 
     <div class="post-content">
       <p>[root@hadoop102 ~]<br>root : 指的是默认管理员  有最大权限<br>hadoop102 : 指的是机器名<br>~ : 指的是当前该用户的家目录</p>
-<h2 id="命令介绍"><a href="#命令介绍" class="headerlink" title="命令介绍"></a>命令介绍</h2><p>1) pwd  : 查看当前光标所在的目录</p>
+<h2 id="命令介绍"><a href="#命令介绍" class="headerlink" title="命令介绍"></a>命令介绍</h2><p>/路径是linux的根路径</p>
+<p>1) pwd  : 查看当前光标所在的目录</p>
 <h4 id="ls命令"><a href="#ls命令" class="headerlink" title="ls命令"></a>ls命令</h4><p>2) ls : 查看<br>&emsp;&emsp;ls -l  显示额外信息(权限 用户用户组  时间  大小)   等价于:<strong>ll</strong><br>&emsp;&emsp;ll -a  也显示隐藏文件夹、文件<br>&emsp;&emsp;&emsp;&emsp;隐藏文件和文件夹都是以‘.’开头，我们可以自己隐藏文件或文件夹<br>&emsp;&emsp;ll  -h 查看 <strong>文件</strong> 的大小<br>&emsp;&emsp;ll -rt :  其中 -r -t是按照时间排序,可以快速找到哪些文件或者文件夹更新了</p>
 <p>3) cd : 切换路径<br>&emsp;&emsp;cd ..  : 返回上一层目录<br>&emsp;&emsp;cd - : 回退到上一次的目录</p>
 <h4 id="家目录"><a href="#家目录" class="headerlink" title="家目录"></a>家目录</h4><p>root是系统管理员用户 家目录是 /root<br>创建的普通用户xx     家目录是 /home/xx </p>
@@ -146,7 +147,7 @@
 <p>7=4 2 1<br>5=4 1<br>6=4 2</p>
 <p>&emsp;&emsp;rw- 第一组 6  代表文件或文件夹的所属<em>用户</em>，读写权限<br>&emsp;&emsp;r– 第二组 4  代表文件或文件夹的所属<em>用户组</em>，读权限<br>&emsp;&emsp;r– 第三组 4  代表<em>其他用户组的用户</em>对这个文件或文件夹，读权限</p>
 <p>例子: rw-r- -r- -    root root     22.log<br>&emsp;&emsp;可以看到22.log 属于root用户 属于root用户组<br>&emsp;&emsp;root用户看前三个对22.log有读和写的权限。root用户组看中间对22.log有读权限。其他用户组的用户看后三个，对22.log有读权限</p>
-<p>关于权限：<br>&emsp;&emsp;chmod -R 777 文件或文件夹  (777分别对应所属用户、所属用户组、其他用户组的用户  所拥有的权限)(7=4 2 1)<br>&emsp;&emsp;chown -R 用户:用户组  文件或文件夹<br>其中-R ： 以递归方式更改所有的文件及子目录</p>
+<p>关于权限：<br>&emsp;&emsp;chmod -R 777 文件或文件夹  (777分别对应所属用户、所属用户组、其他用户组的用户  所拥有的权限)(7=4 2 1)<br>&emsp;&emsp;chown -R 用户:用户组  文件或文件夹<br>其中-R ： 以递归方式更改所有的文件及子目录<br><em>chmod是修改文件或文件夹对不同用户不同用户组的权限</em><br><em>chown是给文件夹或文件修改所属用户和用户组</em></p>
 <p>案例:<br>[root@hadoop102 tmp]# vi clouduncle.log<br><a href="http://www.baidu.com" target="_blank" rel="noopener">www.baidu.com</a></p>
 <p>[clouduncle@hadoop102 tmp]$ cat  clouduncle.log<br><a href="http://www.baidu.com" target="_blank" rel="noopener">www.baidu.com</a><br>[clouduncle@hadoop102 tmp]$ </p>
 <p>收回其他组的r权限<br>[root@hadoop102 tmp]# chmod 640 clouduncle.log<br>[clouduncle@hadoop102 tmp]$ cat  clouduncle.log<br>cat: clouduncle.log: Permission denied</p>
@@ -164,6 +165,7 @@
 <p>场景:<br>shell脚本，对数据文件清空操作，根据字节大小判断是否清空完成<br>echo  “” &gt; 2.log<br>if filezie &gt; 0 then<br>   业务不操作</p>
 <p>else<br>    2.log 灌业务数据</p>
 <p>上面清空操作是错误文件自己数不会为0，永远不会进入业务操作</p>
+<h2 id="linux两个机制"><a href="#linux两个机制" class="headerlink" title="linux两个机制"></a>linux两个机制</h2><p>&emsp;&emsp; oom-killer机制：当linux服务器某个进程使用内存超标 Linux机器为了保护自己，会主动杀死进程，释放内存。这个就是本来我的进程好好的，过了一夜莫名其妙的挂了，可能就是触发了这个机制。<br>&emsp;&emsp; /tmp目录 30天自动删除机制</p>
 <h4 id="结束了"><a href="#结束了" class="headerlink" title="结束了"></a>结束了</h4>
     </div>
 
@@ -173,7 +175,7 @@
     
   <div id="toc" class="toc-article">
     <strong class="toc-title">目录</strong>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#命令介绍"><span class="toc-text">命令介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ls命令"><span class="toc-text">ls命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#家目录"><span class="toc-text">家目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看文件-文件夹大小"><span class="toc-text">查看文件&#x2F;文件夹大小</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#移动拷贝"><span class="toc-text">移动拷贝</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建文件"><span class="toc-text">创建文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看文件内容"><span class="toc-text">查看文件内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#上传下载命令"><span class="toc-text">上传下载命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#别名"><span class="toc-text">别名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#全局变量"><span class="toc-text">全局变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建用户"><span class="toc-text">创建用户</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#历史命令"><span class="toc-text">历史命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#高危命令"><span class="toc-text">高危命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用户和用户组（一般都是由运维操作，除非平台运维都由自己团队接过来）"><span class="toc-text">用户和用户组（一般都是由运维操作，除非平台运维都由自己团队接过来）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#用户"><span class="toc-text">用户</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#设置密码"><span class="toc-text">设置密码</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#用户组"><span class="toc-text">用户组</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#权限"><span class="toc-text">权限</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#搜索"><span class="toc-text">搜索</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#vi"><span class="toc-text">vi</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结束了"><span class="toc-text">结束了</span></a></li></ol></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#命令介绍"><span class="toc-text">命令介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ls命令"><span class="toc-text">ls命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#家目录"><span class="toc-text">家目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看文件-文件夹大小"><span class="toc-text">查看文件&#x2F;文件夹大小</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#移动拷贝"><span class="toc-text">移动拷贝</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建文件"><span class="toc-text">创建文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看文件内容"><span class="toc-text">查看文件内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#上传下载命令"><span class="toc-text">上传下载命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#别名"><span class="toc-text">别名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#全局变量"><span class="toc-text">全局变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建用户"><span class="toc-text">创建用户</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#历史命令"><span class="toc-text">历史命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#高危命令"><span class="toc-text">高危命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用户和用户组（一般都是由运维操作，除非平台运维都由自己团队接过来）"><span class="toc-text">用户和用户组（一般都是由运维操作，除非平台运维都由自己团队接过来）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#用户"><span class="toc-text">用户</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#设置密码"><span class="toc-text">设置密码</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#用户组"><span class="toc-text">用户组</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#权限"><span class="toc-text">权限</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#搜索"><span class="toc-text">搜索</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#vi"><span class="toc-text">vi</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux两个机制"><span class="toc-text">linux两个机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#结束了"><span class="toc-text">结束了</span></a></li></ol></li></ol></li></ol>
   </div>
 
 
@@ -191,21 +193,6 @@
   
 </div>
 
-  
-    <div class="post-nav">
-      <div class="post-nav-item post-nav-next">
-        
-      </div>
-  
-      <div class="post-nav-item post-nav-prev">
-          
-          <a href="/2015/07/20/linux%E9%AB%98%E7%BA%A7/" rel="prev" title="linux系统检查">
-            linux系统检查
-          </a>
-          <span>〉</span>
-        
-      </div>
-    </div>
   
 
 
