@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="hadoop,Yarn," />
+  
+
+  
+    <meta name="description" content="一起成长" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>Yarn [ 小彩鸟 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">小彩鸟</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Yarn
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2016-07-02T04:00:00.000Z">
+        2016-07-02
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Yarn/" rel="tag">Yarn</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hadoop/" rel="tag">hadoop</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>yarn是一个资源调度框架，负责为<em>运算程序</em> 提供服务器 <em>运算资源</em>，总体上仍然是主从架构</p>
+<ul>
+<li>Yarn并不清楚用户提交的程序的运行机制(只提供运算资源如需要cpu给你cpu，需要内存给你内存，而不管程序怎么跑)</li>
+<li>Yarn只提供运算资源的调度（用户程序向Yarn申请资源，Yarn就负责分配资源）</li>
+<li>Yarn中的主管角色叫ResourceManager</li>
+<li>Yarn中具体提供运算资源的角色叫NodeManager，App Master和Container都是运行在NM上</li>
+<li>这样一来，Yarn其实就与运行的用户程序完全解耦成为一个<em>通用的资源调度平台</em>，就意味着Yarn上可以运行各种类型的分布式运算程序（mapreduce，spark等）。</li>
+</ul>
+<p>生产中总内存的75%是给进程使用，25%系统保留（内存如果没有达到linux阈值，就不会执行oom-killer的机制），所以计算资源真正能使用的只有总内存的75%</p>
+<h2 id="ResourceManager"><a href="#ResourceManager" class="headerlink" title="ResourceManager"></a>ResourceManager</h2><p>&emsp;&emsp;这是一个全局的资源管理器负责整个系统的资源管理和分配，包括处理客户端请求、启动/监控APP master、监控nodemanager、资源的分配与调度。它主要由两个组件构成：ApplicationsManager，ResourceScheduler</p>
+<h3 id="ApplicationsManager"><a href="#ApplicationsManager" class="headerlink" title="ApplicationsManager"></a>ApplicationsManager</h3><p>&emsp;&emsp;应用程序管理器负责管理整个系统中所有应用程序，包括应用程序提交、与调度器协商资源以启动ApplicationMaster、监控<em>ApplicationMaster</em>运行状态并在失败时重新启动它等,跟踪分给Container的进度、状态也是其职责。<br>&emsp;&emsp;我们客户端提交程序到ResourceManager进程的时候实际上是提交到了ApplicationsManager组件里</p>
+<h3 id="ResourceScheduler"><a href="#ResourceScheduler" class="headerlink" title="ResourceScheduler"></a>ResourceScheduler</h3><p>&emsp;&emsp;调度器它是“纯调度器”不从事任何与具体应用程序相关的工作，仅根据各个应用程序的资源需求进行资源分配，而资源分配单位用一个抽象概念“资源容器”（Resource Container，简称Container）表示。Container是一个动态资源分配单位，它将内存、CPU、磁盘、网络等资源封装在一起，从而限定每个任务使用的资源量。</p>
+<br/>
+
+<h2 id="NodeManager"><a href="#NodeManager" class="headerlink" title="NodeManager"></a>NodeManager</h2><p>&emsp;&emsp;Nodemanager它管理Hadoop集群中单个计算节点,他需要与应用程序的ApplicationMaster(用户提交作业的老大)和集群资源管理器RM(调度框架的老大)交互</p>
+<ul>
+<li>从ApplicationMaster上接收到相关Container的命令(启动，停止Container)并执行</li>
+<li>Nodemanager定时地向RM汇报本节点上的资源使用情况和各个Container的运行状态（cpu和内存等资源）</li>
+</ul>
+<br/>
+
+<h2 id="ApplicationMaster（AM）"><a href="#ApplicationMaster（AM）" class="headerlink" title="ApplicationMaster（AM）"></a>ApplicationMaster（AM）</h2><p>&emsp;&emsp;管理YARN内运行的应用程序的每个实例,用户提交的每个应用程序均包含一个AM</p>
+<ul>
+<li>向RS调度器申请资源</li>
+<li>与nm协同工作完成task的执行和监控</li>
+<li>监控所有<em>任务</em>运行状态，并在任务运行失败时重新为任务申请资源以重启任务</li>
+</ul>
+<br/>
+
+
+<h2 id="Container"><a href="#Container" class="headerlink" title="Container"></a>Container</h2><p>&emsp;&emsp;container是虚拟的概念，是yarn中的资源抽象,它运行在nodemanager进程所在的机器上的，它封装了某个节点上的多维度资源，如内存、CPU <em>vcores</em>，磁盘，网络等，当AM向RM申请资源时，RM为AM返回的资源便是用Container表示的。YARN会为每个任务(用户提交的一个作业会被拆分为多个maptask任务和reducetask任务)分配一个Container，且该任务只能使用该Container中描述的资源。需要注意的是，Container它是一个动态资源划分单位，是根据应用程序的需求动态生成的。目前为止，YARN仅支持CPU和内存两种资源。<br>提交作业到yarn的时候可以指定container的配置。但是如果没有指定，yarn会分配container的默认配置，如果资源不够的话，正常情况可以动态加的，会有个最大值的范围，如果超过最大值container就爆掉了会抛出oom。</p>
+<br/>
+<br/>
+
+<h2 id="Mr-on-yarn提交流程"><a href="#Mr-on-yarn提交流程" class="headerlink" title="Mr on yarn提交流程"></a>Mr on yarn提交流程</h2><br/>
+
+<p><img src="/img/Yarn/Yarn%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B.png" alt="Yarn提交作业流程"></p>
+<p>1.client向rm提交应用程序（jar） 其中已经包含ApplicationMaster主程序和启动命令<br>2.RS会返回资源提交的路径<br>3.客户端将job资源(切片信息,xml文件,jar包)提交到该路径<br>4.资源提交完毕后,向RM申请启动appmaster<br>5.rm将用户的请求初始化成task放到调度队列中<br>6.ApplicationsManager会为job分配第一个container，运行ApplicationMaster,Applicationmaster启动后向ApplicationsManager注册之后在yarn的web界面就能看到这个job的运行状态<br>7.Applicationmaster采取轮询的方式通过【RPC】协议让ResourceScheduler，申请和领取资源（哪台nm 多个内存 多少cpu vcore）<br>8.之后下载刚才提交的job资源到本地</p>
+<hr>
+<p>1-8步 启动app master（应用的主程序），领取到资源列表</p>
+<p>9.一旦app master拿到资源列表，就和对应的nm进程通信，要求启动的任务maptask计算代码<br>10.NM为任务设置好运行环境(container容器 包含jar包等资源)<br>11.MrAppMaster将任务启动命令写在一个脚本里，并通过该脚本启动任务maptask。各个任务task通过【rpc】协议向app master汇报自己的进度和状态，以此让app master随时掌握task的运行状态。当task运行失败，会在另外一个container容器里面重启任务。<br>12.maptask运行完成后，MrAppMaster会向RM申请container运行reducetask。<br>13.reducetask会从map处拿取相应分区数据,然后执行<br>14.当所有task运行完成后，app master向 apps manager申请注销和关闭作业</p>
+<p>这时在yarn web页面看任务是不是完成的，完成后的状态是成功还是失败的</p>
+<hr>
+<p>运行任务，直到任务完成。</p>
+<p>简单总结就是: 启动app master（应用的主程序），领取到资源列表 ，运行任务，直到任务完成。</p>
+<br/>
+
+<h2 id="Yarn调优"><a href="#Yarn调优" class="headerlink" title="Yarn调优"></a>Yarn调优</h2><br/>
+
+<p>关于Yarn的调优，就是<em>调Container容器</em>，因为task任务就是放到container中执行的。</p>
+<p>生产上的部署一般遵循存储计算一体，即计算时发现本节点有数据不需要去其他节点拉取数据，节省网络io，这种一般叫做数据本地化。<em>所以生产上的机器一般有DN就会有NM，这俩部署在一起</em></p>
+<p>案例:假设公司买了台服务器，128G内存，16核 <em>物理</em> core。<br>&emsp;&emsp;1.1 系统装完 消耗1G内存<br>&emsp;&emsp;1.2 系统预留20%的内存（①防止触发oom-killer机制 ②Linux系统防止夯住 ③给未来部署的组件预留部分空间），这个不是一成不变的，看自己机器的内存基数（64G还是128G）<br>&emsp;&emsp;1.3 假设该台机器只部署DN（存储数据）、NM（计算）节点</p>
+<p>生产上DataNode应该给多少G内存？<br>&emsp;&emsp;生产上设了2G，这是很多了，其实只用了900多M，业务高峰期也没有超过1G，这根据每秒钟数据量来的。官网默认参数1000M</p>
+<p>生产上NodeManager应该给多少G内存？<br>&emsp;&emsp;生产上设了4G，可以看上面nm的作用</p>
+<p>128G*80%=102G,  102G-2G-4G=96G  , 这96G全部用来设计给真正干活的Container容器用。</p>
+<br/>
+
+<h3 id="调整Container容器的参数"><a href="#调整Container容器的参数" class="headerlink" title="调整Container容器的参数"></a>调整Container容器的参数</h3><h4 id="如果仅仅考虑内存-配置和调整参数"><a href="#如果仅仅考虑内存-配置和调整参数" class="headerlink" title="如果仅仅考虑内存,配置和调整参数:"></a>如果仅仅考虑内存,配置和调整参数:</h4><p><em>yarn.nodemanager.resource.memory-mb</em><br>&emsp;&emsp;所有container可用的总的内存                                           默认是8G  调成96G<br><em>yarn.scheduler.minimum-allocation-mb</em><br>&emsp;&emsp;单个Container容器最小的内存大小，极限情况下有96个Container每个1G      默认是1G<br><em>yarn.scheduler.maximum-allocation-mb</em><br>&emsp;&emsp;单个Container容器最大的内存大小，极限情况下有1个Container大小是96G    默认是8G  调成96G</p>
+<p>Container执行任务时候，如果发现内存不够了，可以动态增加资源（cdh yarn配置的默认1G递增（目前apache没有该配置），但是一般不调整），一直加到设置的最大参数。</p>
+<br/>
+
+<h4 id="如果仅仅考虑cpu-vcore-（container容器虚拟core）-生产上默认不考虑预留core"><a href="#如果仅仅考虑cpu-vcore-（container容器虚拟core）-生产上默认不考虑预留core" class="headerlink" title="如果仅仅考虑cpu vcore （container容器虚拟core）(生产上默认不考虑预留core)"></a>如果仅仅考虑cpu vcore （container容器虚拟core）(生产上默认不考虑预留core)</h4><br/>
+
+<h5 id="cpu-vcore介绍"><a href="#cpu-vcore介绍" class="headerlink" title="cpu vcore介绍"></a>cpu vcore介绍</h5><p>&emsp;&emsp;vcore是yarn自己设计引入的，设计初衷是考虑不同机器的cpu的物理core性能不一样，每个cpu计算的能力不一样。<br>比如第一台机器物理cpu是第二台机器物理cpu的2倍，这时通过设置第一个物理cpu的虚拟core来弥补这个差异</p>
+<p>第一台机器强悍  pcore（物理core）：vcore（虚拟core）=1:2<br>第二台机器弱些  pcore（物理core）：vcore（虚拟core）=1:1</p>
+<p><em>现在生产上基本上不可能设置谁强悍谁不强悍。统一设置为pcore（物理core）：vcore（虚拟core）=1:2</em><br>为什么要设置1:2呢？因为计算的时候container容器需要vcore，并发任务是靠vcore。当然也不能调太大，这需要经验值，由大公司得来的</p>
+<h5 id="具体配置"><a href="#具体配置" class="headerlink" title="具体配置"></a>具体配置</h5><p><em>yarn.nodemanager.resource.cpu-vcores</em><br>&emsp;&emsp;container可用的总的vcore，默认是8，调整为32（假设pcore为16）<br><em>yarn.scheduler.minimum-allocation-vcores</em><br>&emsp;&emsp;一个container容器最小分配vcore数，默认为1，极限情况下有32个container容器<br><em>yarn.scheduler.maximum-allocation-vcores</em><br>&emsp;&emsp;一个container容器最大分配vcore数，默认为32，极限情况下有1个container容器<br><em>yarn.nodemanager.resource.pcores-vcores-multiplier</em><br>&emsp;&emsp;vcore：pcore，默认的是1，调整为2</p>
+<p>想要让一台机器让任务计算快一点，不光光需要考虑当前任务的cpu和内存，还要考虑container的个数是多少</p>
+<p>生产上面如何设置？<br>clouder公司推荐，一个Container的vcore最好不要超过5个，所以生产上设置单个container能申请的vcore最大为4(<em>这个4就是参数设置的突破口</em>)，如果每个container都选最大的vcore极限情况下只有8个Container（比如vcore是32=4*8）</p>
+<h4 id="整合memory-cpu-配置和调整参数"><a href="#整合memory-cpu-配置和调整参数" class="headerlink" title="整合memory + cpu,配置和调整参数:"></a><em>整合memory + cpu,配置和调整参数</em>:</h4><p>确定最大4个vocre极限时候只有8个container</p>
+<p><em>yarn.nodemanager.resource.memory-mb</em><br>&emsp;&emsp;调成96G<br><em>yarn.scheduler.minimum-allocation-mb</em><br><em>yarn.scheduler.maximum-allocation-mb</em><br>&emsp;&emsp;单个Container的vcore越多Container的总个数就越少,Container总数目越少,单个container能申请的内存就越多,所以最大调成96/8=12G</p>
+<p>但是spark计算时内存有些指标比较大,那么这个参数必然调大,那么这种理想化完美化的设置必然被打破,到时以memory为主</p>
+<p><em>yarn.nodemanager.resource.cpu-vcores</em><br>&emsp;&emsp;调整为32（假设pcore为16）<br><em>yarn.scheduler.minimum-allocation-vcores</em><br>&emsp;&emsp;调整为1<br><em>yarn.scheduler.maximum-allocation-vcores</em><br>&emsp;&emsp;调整为4<br><em>yarn.nodemanager.resource.pcores-vcores-multiplier</em><br>&emsp;&emsp;调整为2</p>
+<p><em>yarn.nodemanager.pmem-check-enabled</em><br>&emsp;&emsp;container容器超过物理内存是否杀死容器,默认是true,生产生改为false<br><em>yarn.nodemanager.vmem-check-enabled</em><br>&emsp;&emsp;container容器超过虚拟内存是否杀死容器默认是false,生产生改为false<br><em>yarn.nodemanager.vmem-pmem-ratio</em><br>&emsp;&emsp;2.1  就是有个虚拟内存的概念 一般不用 不要调整这个参数</p>
+<p>思考:假如该节点还有其他组件，比如多了个HBase RS节点<br>机器配置:256G内存 ,cpu物理core 32核<br>三个进程:DN,NM,HBase RS=30G (内存最好不要超过32G)<br>请问上面七个参数如何设置?</p>
+<h2 id="JVM内存设置不要超过32G原因"><a href="#JVM内存设置不要超过32G原因" class="headerlink" title="JVM内存设置不要超过32G原因"></a>JVM内存设置不要超过32G原因</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">事实上jvm在内存小于32G的时候会采用一个内存对象指针压缩技术。</span><br><span class="line">在java中，所有的对象都分配在堆上，然后有一个指针引用它。指向这些对象的指针大小通常是CPU的字长的大小，不是32bit就是64bit，这取决于你的处理器，指针指向了你的值的精确位置。</span><br><span class="line">对于32位系统，你的内存最大可使用4G(32位表示的最大的数字(2^32)代表的内存大小是4G)。对于64系统可以使用更大的内存。但是64位的指针意味着更大的浪费，因为你的指针本身大了。浪费内存不算，更糟糕的是，更大的指针在主内存和缓存器（例如LLC, L1等）之间移动数据的时候，会占用更多的带宽。</span><br><span class="line">Java 使用一个叫内存指针压缩的技术来解决这个问题。它的指针不再表示对象在内存中的精确位置，而是表示偏移量。这意味着32位的指针可以引用40亿个对象，而不是40亿个字节。最终，也就是说堆内存长到32G的物理内存，也可以用32bit的指针表示。</span><br><span class="line">一旦你越过那个神奇的30-32G的边界，指针就会切回普通对象的指针，每个对象的指针都变长了，就会使用更多的CPU内存带宽，也就是说你实际上失去了更多的内存。事实上当内存到达40-50GB的时候，有效内存才相当于使用内存对象指针压缩技术时候的32G内存。</span><br><span class="line">这段描述的意思就是说：即便你有足够的内存，也尽量不要超过32G，因为它浪费了内存，降低了CPU的性能，还要让GC应对大内存。</span><br></pre></td></tr></table></figure>
+
+<h2 id="yarn命令："><a href="#yarn命令：" class="headerlink" title="yarn命令："></a>yarn命令：</h2><p>yarn –help:查看帮助得到部分命令如下<br>&emsp;&emsp;yarn logs applicationid  但是一般都用web界面看日志<br>&emsp;&emsp;yarn application + 回车<br>&emsp;&emsp;&emsp;&emsp;yarn application -kill applicationid<br>&emsp;&emsp;&emsp;&emsp;yarn application -list</p>
+<h2 id="Yarn调度器"><a href="#Yarn调度器" class="headerlink" title="Yarn调度器"></a>Yarn调度器</h2><p>在Yarn中有三种调度器可以选择:FIFO Scheduler,Capacity Scheduler,FairScheduler</p>
+<h4 id="FIFO-Scheduler"><a href="#FIFO-Scheduler" class="headerlink" title="FIFO Scheduler"></a>FIFO Scheduler</h4><p>&emsp;&emsp;把应用提交的顺序排成一个队列,这是一个先进先出的队列,在进行资源分配的时候,先给队列中最头上的应用进行分配资源,如果第一个app需要的资源被满足了，如果还剩下了资源并且满足第二个app需要的资源，那么就为第二个app分配资源,以次类推。所以它不适用于共享集群,大的应用可能会占用所有集群资源,这就导致其他应用被阻塞。</p>
+<h4 id="Capacity-Scheduler"><a href="#Capacity-Scheduler" class="headerlink" title="Capacity Scheduler"></a>Capacity Scheduler</h4><p>&emsp;&emsp;CapacityScheduler允许将整个集群的资源分成多个队列，每个队列还可以进一步划分成层次结构（Hierarchical Queues），从而允许组织内部的不同用户组的使用。每个队列内部，按照FIFO的方式调度Applications。当某个队列的资源空闲时，可以将它的剩余资源共享给其他队列。</p>
+<h4 id="FairScheduler"><a href="#FairScheduler" class="headerlink" title="FairScheduler"></a>FairScheduler</h4><p>&emsp;&emsp;在Fair调度器中，我们不需要预先占用一定的系统资源，Fair调度器会为所有运行的job动态的调整系统资源。当第一个大job提交时，只有这一个job在运行，此时它获得了所有集群资源；当第二个小任务提交后，Fair调度器会分配一半资源给这个小任务，让这两个任务公平的共享集群资源。需要注意的是，从第二个任务提交到获得资源会有一定的延迟，因为它需要等待第一个任务释放占用的Container。小任务执行完成之后也会释放自己占用的资源，大任务又获得了全部的系统资源。最终的效果就是Fair调度器既得到了高的资源利用率又能保证小任务及时完成。</p>
+<p>Apache 默认的资源调度器是容量调度器；<br>CDH 默认的资源调度器是公平调度器。</p>
+<h2 id="结束"><a href="#结束" class="headerlink" title="结束"></a>结束</h2>
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    <div id="toc-div" class="toc-article" >
+   <strong class="toc-title">Index</strong>
+     
+       <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#介绍"><span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ResourceManager"><span class="toc-text">ResourceManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ApplicationsManager"><span class="toc-text">ApplicationsManager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ResourceScheduler"><span class="toc-text">ResourceScheduler</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NodeManager"><span class="toc-text">NodeManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ApplicationMaster（AM）"><span class="toc-text">ApplicationMaster（AM）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Container"><span class="toc-text">Container</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mr-on-yarn提交流程"><span class="toc-text">Mr on yarn提交流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Yarn调优"><span class="toc-text">Yarn调优</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#调整Container容器的参数"><span class="toc-text">调整Container容器的参数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#如果仅仅考虑内存-配置和调整参数"><span class="toc-text">如果仅仅考虑内存,配置和调整参数:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#如果仅仅考虑cpu-vcore-（container容器虚拟core）-生产上默认不考虑预留core"><span class="toc-text">如果仅仅考虑cpu vcore （container容器虚拟core）(生产上默认不考虑预留core)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#cpu-vcore介绍"><span class="toc-text">cpu vcore介绍</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#具体配置"><span class="toc-text">具体配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#整合memory-cpu-配置和调整参数"><span class="toc-text">整合memory + cpu,配置和调整参数:</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM内存设置不要超过32G原因"><span class="toc-text">JVM内存设置不要超过32G原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#yarn命令："><span class="toc-text">yarn命令：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Yarn调度器"><span class="toc-text">Yarn调度器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#FIFO-Scheduler"><span class="toc-text">FIFO Scheduler</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Capacity-Scheduler"><span class="toc-text">Capacity Scheduler</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FairScheduler"><span class="toc-text">FairScheduler</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结束"><span class="toc-text">结束</span></a></li></ol>
+     
+</div>
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="https://kevinofneu-blog-static.oss-cn-beijing.aliyuncs.com/static/2018-12-10-qrcode_for_gh_ffacf5722095_258.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2016/06/23/hadoop/MapReduce/" rel="next" title="MapReduce">
+          MapReduce
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2016/07/10/hive/Hive/" rel="prev" title="Hive">
+            Hive
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://blog.0xff000000.com" target="_blank" rel="noopener">首页</a> |
+        <a class="bottom-item" href="https://0xff000000.com" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="故障,hdfs," />
+  
+
+  
+    <meta name="description" content="一起成长" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>生产HDFS Block损坏恢复最佳实践 [ 小彩鸟 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">小彩鸟</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        生产HDFS Block损坏恢复最佳实践
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2017-12-02T04:00:00.000Z">
+        2017-12-02
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hdfs/" rel="tag">hdfs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%95%85%E9%9A%9C/" rel="tag">故障</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>HDFS是比较稳定的,95%的情况下不会遇到这种情况</p>
+<h1 id="文件bigdata-md"><a href="#文件bigdata-md" class="headerlink" title="文件bigdata.md"></a>文件bigdata.md</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">上传:</span><br><span class="line">-bash-4.2$ hdfs dfs -mkdir &#x2F;blockrecover</span><br><span class="line">-bash-4.2$ echo &quot;www.ruozedata.com&quot; &gt; bigfdata.md</span><br><span class="line"></span><br><span class="line">-bash-4.2$ hdfs dfs -put bigfdata.md &#x2F;blockrecover</span><br><span class="line">-bash-4.2$ hdfs dfs -ls &#x2F;blockrecover</span><br><span class="line">Found 1 items</span><br><span class="line">-rw-r--r--   3 hdfs supergroup         18 2019-03-03 14:42 &#x2F;blockrecover&#x2F;bigfdata.md</span><br><span class="line">-bash-4.2$ </span><br><span class="line"></span><br><span class="line">校验: 健康状态</span><br><span class="line">-bash-4.2$ hdfs fsck &#x2F;</span><br><span class="line">Connecting to namenode via http:&#x2F;&#x2F;yws76:50070&#x2F;fsck?ugi&#x3D;hdfs&amp;path&#x3D;%2F</span><br><span class="line">FSCK started by hdfs (auth:SIMPLE) from &#x2F;192.168.0.76 for path &#x2F; at Sun Mar 03 14:44:44 CST 2019</span><br><span class="line">...............................................................................Status: HEALTHY</span><br><span class="line"> Total size:    50194618424 B</span><br><span class="line"> Total dirs:    354</span><br><span class="line"> Total files:   1079</span><br><span class="line"> Total symlinks:                0</span><br><span class="line"> Total blocks (validated):      992 (avg. block size 50599413 B)</span><br><span class="line"> Minimally replicated blocks:   992 (100.0 %)</span><br><span class="line"> Over-replicated blocks:        0 (0.0 %)</span><br><span class="line"> Under-replicated blocks:       0 (0.0 %)</span><br><span class="line"> Mis-replicated blocks:         0 (0.0 %)</span><br><span class="line"> Default replication factor:    3</span><br><span class="line"> Average block replication:     3.0</span><br><span class="line"> Corrupt blocks:                0</span><br><span class="line"> Missing replicas:              0 (0.0 %)</span><br><span class="line"> Number of data-nodes:          3</span><br><span class="line"> Number of racks:               1</span><br><span class="line">FSCK ended at Sun Mar 03 14:44:45 CST 2019 in 76 milliseconds</span><br><span class="line"></span><br><span class="line">The filesystem under path &#39;&#x2F;&#39; is HEALTHY</span><br><span class="line">-bash-4.2$</span><br></pre></td></tr></table></figure>
+
+<h1 id="直接DN节点上删除文件一个block的一个副本-3副本"><a href="#直接DN节点上删除文件一个block的一个副本-3副本" class="headerlink" title="直接DN节点上删除文件一个block的一个副本(3副本)"></a>直接DN节点上删除文件一个block的一个副本(3副本)</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">删除块和meta文件:</span><br><span class="line">[root@yws87 subdir135]# rm -rf blk_1075808214 blk_1075808214_2068515.meta</span><br><span class="line"></span><br><span class="line">直接重启HDFS，直接模拟损坏效果，然后fsck检查:</span><br><span class="line">-bash-4.2$ hdfs fsck &#x2F;</span><br><span class="line">Connecting to namenode via http:&#x2F;&#x2F;yws77:50070&#x2F;fsck?ugi&#x3D;hdfs&amp;path&#x3D;%2F</span><br><span class="line">FSCK started by hdfs (auth:SIMPLE) from &#x2F;192.168.0.76 for path &#x2F; at Sun Mar 03 16:02:04 CST 2019</span><br><span class="line">.</span><br><span class="line">&#x2F;blockrecover&#x2F;bigfdata.md:  Under replicated BP-1513979236-192.168.0.76-1514982530341:blk_1075808214_2068515. Target Replicas is 3 but found 2 live replica(s), 0 decommissioned replica(s), 0 decommissioning replica(s).</span><br><span class="line">...............................................................................Status: HEALTHY</span><br><span class="line"> Total size:    50194618424 B</span><br><span class="line"> Total dirs:    354</span><br><span class="line"> Total files:   1079</span><br><span class="line"> Total symlinks:                0</span><br><span class="line"> Total blocks (validated):      992 (avg. block size 50599413 B)</span><br><span class="line"> Minimally replicated blocks:   992 (100.0 %)</span><br><span class="line"> Over-replicated blocks:        0 (0.0 %)</span><br><span class="line"> Under-replicated blocks:       1 (0.10080645 %)</span><br><span class="line"> Mis-replicated blocks:         0 (0.0 %)</span><br><span class="line"> Default replication factor:    3</span><br><span class="line"> Average block replication:     2.998992</span><br><span class="line"> Corrupt blocks:                0</span><br><span class="line"> Missing replicas:              1 (0.033602152 %)</span><br><span class="line"> Number of data-nodes:          3</span><br><span class="line"> Number of racks:               1</span><br><span class="line">FSCK ended at Sun Mar 03 16:02:04 CST 2019 in 148 milliseconds</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">The filesystem under path &#39;&#x2F;&#39; is HEALTHY</span><br><span class="line">-bash-4.2$</span><br></pre></td></tr></table></figure>
+<h1 id="手动修复hdfs-debug-这个命令并不一定成功，手动修复看运气"><a href="#手动修复hdfs-debug-这个命令并不一定成功，手动修复看运气" class="headerlink" title="手动修复hdfs debug  (这个命令并不一定成功，手动修复看运气)"></a>手动修复hdfs debug  (这个命令并不一定成功，手动修复看运气)</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">-bash-4.2$ hdfs |grep debug</span><br><span class="line">没有输出debug参数的任何信息结果！</span><br><span class="line">故hdfs命令帮助是没有debug的，但是确实有hdfs debug这个组合命令，切记。</span><br><span class="line"></span><br><span class="line">修复命令:</span><br><span class="line">-bash-4.2$ hdfs debug  recoverLease  -path &#x2F;blockrecover&#x2F;bigfdata.md -retries 10</span><br><span class="line">recoverLease SUCCEEDED on &#x2F;blockrecover&#x2F;bigfdata.md</span><br><span class="line">-bash-4.2$ </span><br><span class="line"></span><br><span class="line">直接DN节点查看，block文件和meta文件恢复:</span><br><span class="line">[root@yws87 subdir135]# ll</span><br><span class="line">total 8</span><br><span class="line">-rw-r--r-- 1 hdfs hdfs 56 Mar  3 14:28 blk_1075808202</span><br><span class="line">-rw-r--r-- 1 hdfs hdfs 11 Mar  3 14:28 blk_1075808202_2068503.meta</span><br><span class="line">[root@yws87 subdir135]# ll</span><br><span class="line">total 24</span><br><span class="line">-rw-r--r-- 1 hdfs hdfs 56 Mar  3 14:28 blk_1075808202</span><br><span class="line">-rw-r--r-- 1 hdfs hdfs 11 Mar  3 14:28 blk_1075808202_2068503.meta</span><br><span class="line">-rw-r--r-- 1 hdfs hdfs 18 Mar  3 15:23 blk_1075808214</span><br><span class="line">-rw-r--r-- 1 hdfs hdfs 11 Mar  3 15:23 blk_1075808214_2068515.meta</span><br></pre></td></tr></table></figure>
+<h1 id="自动修复"><a href="#自动修复" class="headerlink" title="自动修复"></a>自动修复</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">当数据块损坏后，DN节点执行directoryscan操作之前，都不会发现损坏；</span><br><span class="line">也就是directoryscan操作是间隔6h</span><br><span class="line">dfs.datanode.directoryscan.interval : 21600</span><br><span class="line"></span><br><span class="line">在DN向NN进行blockreport前，都不会恢复数据块;</span><br><span class="line">也就是blockreport操作是间隔6h</span><br><span class="line">dfs.blockreport.intervalMsec : 21600000</span><br><span class="line"></span><br><span class="line">当NN收到blockreport才会进行恢复操作。</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>生产上本人一般倾向于使用 手动修复方式，但是前提要手动删除损坏的block块。</p>
+<p>切记，是删除<em>损坏block文件和meta文件</em>，而不是删除hdfs文件。</p>
+<p>当然还可以先把文件get下载，然后hdfs删除，再对应上传。</p>
+<p>切记删除不要执行: hdfs fsck / -delete 这是删除损坏的文件， 那么数据不就丢了嘛；除非无所谓丢数据，或者有信心从其他地方可以补数据到hdfs！</p>
+<h1 id="思考题"><a href="#思考题" class="headerlink" title="思考题"></a>思考题</h1><p>那么如何确定一个文件的损失的块位置，哪几种方法呢？<br>CDH的配置里搜索没有这两个参数，怎么调整生效呢？</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    <div id="toc-div" class="toc-article" >
+   <strong class="toc-title">Index</strong>
+     
+       <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#文件bigdata-md"><span class="toc-text">文件bigdata.md</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#直接DN节点上删除文件一个block的一个副本-3副本"><span class="toc-text">直接DN节点上删除文件一个block的一个副本(3副本)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#手动修复hdfs-debug-这个命令并不一定成功，手动修复看运气"><span class="toc-text">手动修复hdfs debug  (这个命令并不一定成功，手动修复看运气)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#自动修复"><span class="toc-text">自动修复</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#思考题"><span class="toc-text">思考题</span></a></li></ol>
+     
+</div>
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="https://kevinofneu-blog-static.oss-cn-beijing.aliyuncs.com/static/2018-12-10-qrcode_for_gh_ffacf5722095_258.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2017/10/23/sqoop/sqoop/" rel="next" title="sqoop">
+          sqoop
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2017/12/08/Hbase/hbase/" rel="prev" title="Hbase">
+            Hbase
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://blog.0xff000000.com" target="_blank" rel="noopener">首页</a> |
+        <a class="bottom-item" href="https://0xff000000.com" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>
